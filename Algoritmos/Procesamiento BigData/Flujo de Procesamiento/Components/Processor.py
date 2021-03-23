@@ -20,6 +20,7 @@ class Processor(object):
         self.source_folder = kwargs.get("source_folder", "Archivos Fuente")
         self.threshold = kwargs.get("threshold", 15)
         self.key_delimiter = kwargs.get("delimiter", '|')
+        self.keywordFilter = kwargs.get("keyword", "RECLAMACION")
         self.table_target = kwargs.get("table_target", "enroladoss")
         self.summary_file_name = kwargs.get("summary_file", "ResumenProcesamiento.txt")
         
@@ -42,8 +43,7 @@ class Processor(object):
 
     def readDownloadFolder(self):
         files = os.listdir(self.source_folder)
-        keywordFilter = "reclamacion"
-        files = [i for i in files if keywordFilter in i.lower()]
+        files = [i for i in files if self.keywordFilter in i.lower()]
         number_of_files = len(files)
         
         return files, number_of_files
@@ -59,7 +59,6 @@ class Processor(object):
         # Validate if there are a certain number of files
         if number_of_files >= self.threshold:
             # Instance the main objects
-            now = datetime.now()
             self.db.setConnection()
             self.db.setTableTarget(self.table_target)
             
@@ -68,6 +67,7 @@ class Processor(object):
                 # set up the main variables
                 success = 0
                 failures = 0
+                now = datetime.now()
                 file_creation_date = now.strftime("%Y/%m/%d %H:%M:%S")
                 file_processing_start_time = datetime.now()
                 
@@ -105,6 +105,7 @@ class Processor(object):
                 # Database Commit
                 try:
                     self.db.commitRecords()
+                    now = datetime.now()
                     file_storage_date = now.strftime("%Y/%m/%d %H:%M:%S")
                 except:
                     print("Commit Error, please review DB connection")
@@ -123,6 +124,7 @@ class Processor(object):
                 except:
                     print("Posting Error, please review server connection or http request")
                 
+                now = datetime.now()
                 file_processing_end_time = datetime.now()
                 file_processing_time = file_processing_end_time - file_processing_start_time
                 
